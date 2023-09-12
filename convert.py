@@ -4,8 +4,8 @@ import csv
 from dataclasses import dataclass
 from os import PathLike
 from os.path import exists
+from collections import defaultdict
 from pathlib import Path
-
 
 
 condition_map = defaultdict(
@@ -31,7 +31,7 @@ moxfield_headers = [
 
 
 @dataclass(frozen=True, slots=True)
-class Card:
+class CardData:
     quantity: str
     trade_quantity: str
     name: str
@@ -56,36 +56,39 @@ class Card:
             }
 
 
+def generate_cards(csv_path: PathLike) -> list[CardData]:
+    retval: list[CardData] = []
 
-def split_data(line):
-    data = [
-        '"{}"'.format(x)
-        for x in list(next(csv.reader([line], delimiter=",", quotechar='"')))
-    ]
+    with open(csv_path, 'r') as csv_file:
+        # The first line is a seperator definition
+        seperator = csv_file.readline().split('=')[1].strip('"\n')
+        csv_reader = csv.DictReader(csv_file, delimiter=seperator)
 
-    quantity = data[1]
-    trade_quantity = data[2]
-    name = data[3].replace('"', "")
-    set_code = data[4].lower()
-    set_name = data[5]
-    collector_num = data[6]
-    condition = condition_map[data[7]]
-    foil = '' if data[8] == 'Normal' else 'foil'
-    language = data[9]
+        data_row: dict
+        for data_row in csv_reader:
+            # Dragon Shield adds a junk data row at the end
+            if data_row['Quantity'] == '':
+                continue
 
-    card = Card(
-        quantity,
-        trade_quantity,
-        name,
-        set_code,
-        set_name,
-        collector_num,
-        condition,
-        foil,
-        language,
-        )
+            foil = data_row['Printing'].lower()
+            if foil not in ('etched', 'foil'):
+                foil = ''
 
-    return card
+            card = CardData(
+                data_row['Quantity'],
+                data_row['Trade Quantity'],
+                data_row['Card Name'],
+                data_row['Set Code'],
+                data_row['Set Name'],
+                data_row['Card Number'],
+                condition_map[data_row['Condition']],
+                foil,
+                data_row['Language'],
+                )
+
+            retval.append(card)
+
+    return retval
 
 
 def convert(file_path: PathLike):
