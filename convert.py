@@ -1,5 +1,7 @@
+from os import PathLike
 from os.path import exists
 import csv
+from pathlib import Path
 
 file_path = "dragon_shield.csv"
 
@@ -83,7 +85,7 @@ def split_data(line):
     return card
 
 
-def convert():
+def convert(file_path: PathLike):
     if not exists(file_path):
         print(f'File not found. Place "{file_path}" in root folder.')
     else:
@@ -106,4 +108,5 @@ def convert():
 
 
 if __name__ == "__main__":
-    convert()
+    import_path = Path("cards.csv")
+    convert(import_path)
