@@ -106,6 +106,6 @@ def convert(in_path: PathLike, out_path: PathLike) -> None:
 
 
 if __name__ == "__main__":
-    imput_path = Path("cards.csv")
+    input_path = Path("cards.csv")
     output_path = Path("moxfield.csv")
-    convert(imput_path, output_path)
+    convert(input_path, output_path)
