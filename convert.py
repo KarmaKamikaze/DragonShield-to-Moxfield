@@ -79,23 +79,23 @@ def split_data(line):
 
 def convert(file_path: PathLike):
     if not exists(file_path):
-        print(f'File not found. Place "{file_path}" in root folder.')
-    else:
-        input = open(file_path, "r")
-        contents = input.readlines()
-        input.close()
+        raise OSError(f'{file_path} not found. Place file in root folder.')
 
-        with open("moxfield.csv", "w") as output:
-            output.write(
-                'Count,"Tradelist Count","Name","Edition","Condition",'
-                + '"Language","Foil","Tags","Last Modified","Collector Number"\n'
+    input = open(file_path, "r")
+    contents = input.readlines()
+    input.close()
+
+    with open("moxfield.csv", "w") as output:
+        output.write(
+            'Count,"Tradelist Count","Name","Edition","Condition",'
+            + '"Language","Foil","Tags","Last Modified","Collector Number"\n'
             )
-            for line in contents[2:]:
-                card = split_data(line)
-                output.write(
-                    f'{card.quantity},{card.trade_quantity},"{card.name}",'
-                    + f"{card.set_code},{card.condition},{card.language},"
-                    + f'{card.foil},"","",{card.collector_num}\n'
+        for line in contents[2:]:
+            card = split_data(line, contents[1])
+            output.write(
+                f'{card.quantity},{card.trade_quantity},"{card.name}",'
+                + f"{card.set_code},{card.condition},{card.language},"
+                + f'{card.foil},"","",{card.collector_num}\n'
                 )
 
 
