@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from dataclasses import dataclass
 from os import PathLike
 from os.path import exists
 import csv
@@ -8,28 +9,17 @@ from pathlib import Path
 file_path = "dragon_shield.csv"
 
 
-class Card_Data:
-    def __init__(
-        self,
-        quantity,
-        trade_quantity,
-        name,
-        set_code,
-        set_name,
-        collector_num,
-        condition,
-        foil,
-        language,
-    ):
-        self.quantity = quantity
-        self.trade_quantity = trade_quantity
-        self.name = name
-        self.set_code = set_code
-        self.set_name = set_name  # set name is not relevant to conversion
-        self.collector_num = collector_num
-        self.condition = condition
-        self.foil = foil
-        self.language = language
+@dataclass(frozen=True, slots=True)
+class Card:
+    quantity: str
+    trade_quantity: str
+    name: str
+    set_code: str
+    set_name: str
+    collector_num: str
+    condition: str
+    foil: str
+    language: str
 
 
 def condition_setter(condition):
@@ -72,7 +62,7 @@ def split_data(line):
     foil = foil_setter(data[8])
     language = data[9]
 
-    card = Card_Data(
+    card = Card(
         quantity,
         trade_quantity,
         name,
@@ -82,7 +72,7 @@ def split_data(line):
         condition,
         foil,
         language,
-    )
+        )
 
     return card
 
