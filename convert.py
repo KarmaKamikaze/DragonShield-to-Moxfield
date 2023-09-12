@@ -91,28 +91,23 @@ def generate_cards(csv_path: PathLike) -> list[CardData]:
     return retval
 
 
-def convert(file_path: PathLike):
-    if not exists(file_path):
-        raise OSError(f'{file_path} not found. Place file in root folder.')
+def convert(in_path: PathLike, out_path: PathLike) -> None:
+    if not exists(in_path):
+        raise FileNotFoundError(
+            f'{in_path} not found. Place file in root folder.')
 
-    input = open(file_path, "r")
-    contents = input.readlines()
-    input.close()
+    card_data = generate_cards(in_path)
 
-    with open("moxfield.csv", "w") as output:
-        output.write(
-            'Count,"Tradelist Count","Name","Edition","Condition",'
-            + '"Language","Foil","Tags","Last Modified","Collector Number"\n'
-            )
-        for line in contents[2:]:
-            card = split_data(line, contents[1])
-            output.write(
-                f'{card.quantity},{card.trade_quantity},"{card.name}",'
-                + f"{card.set_code},{card.condition},{card.language},"
-                + f'{card.foil},"","",{card.collector_num}\n'
-                )
+    with open(out_path, 'w', newline='') as out_file:
+        writer = csv.DictWriter(out_file,
+                                fieldnames=moxfield_headers,
+                                dialect=csv.unix_dialect)
+        writer.writeheader()
+        for card in card_data:
+            writer.writerow(card.get_output_dict())
 
 
 if __name__ == "__main__":
-    import_path = Path("cards.csv")
-    convert(import_path)
+    imput_path = Path("cards.csv")
+    output_path = Path("moxfield.csv")
+    convert(imput_path, output_path)
