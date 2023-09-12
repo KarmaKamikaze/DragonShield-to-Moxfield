@@ -45,8 +45,6 @@ class CardData:
     def get_output_dict(self) -> dict[str, str]:
         return {
             'Count': self.quantity,
-            # Tradelist count is not used in Moxfield
-            # 'Tradelist Count': self.trade_quantity,
             'Name': self.name,
             'Edition': self.set_code,
             'Condition': self.condition,
