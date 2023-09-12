@@ -44,13 +44,13 @@ class CardData:
 
     def get_output_dict(self) -> dict[str, str]:
         return {
-            'Count': self.quantity,
-            'Name': self.name,
-            'Edition': self.set_code,
-            'Condition': self.condition,
-            'Language': self.language,
-            'Foil': self.foil,
-            'Collector Number': self.collector_num
+            moxfield_headers[0]: self.quantity,
+            moxfield_headers[1]: self.name,
+            moxfield_headers[2]: self.set_code,
+            moxfield_headers[3]: self.condition,
+            moxfield_headers[5]: self.language,
+            moxfield_headers[6]: self.foil,
+            moxfield_headers[7]: self.collector_num
             }
 
 
@@ -68,9 +68,9 @@ def generate_cards(csv_path: PathLike) -> list[CardData]:
             if data_row['Quantity'] == '':
                 continue
 
-            foil = data_row['Printing'].lower()
-            if foil not in ('etched', 'foil'):
-                foil = ''
+            printing = data_row['Printing'].lower()
+            if printing not in ('etched', 'foil'):
+                printing = ''
 
             card = CardData(
                 data_row['Quantity'],
@@ -80,7 +80,7 @@ def generate_cards(csv_path: PathLike) -> list[CardData]:
                 data_row['Set Name'],
                 data_row['Card Number'],
                 condition_map[data_row['Condition']],
-                foil,
+                printing,
                 data_row['Language'],
                 )
 
