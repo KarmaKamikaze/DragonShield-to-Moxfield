@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 
+import csv
 from dataclasses import dataclass
 from os import PathLike
 from os.path import exists
-import csv
 from pathlib import Path
 
 
 
 condition_map = defaultdict(
     lambda: '',
-    Mint="Mint",
-    NearMint="Near Mint",
-    Excellent="Near Mint",
-    Good="Good (Lightly Played)",
-    LightPlayed="Played",
-    Played="Heavily Played",
-    Poor="Damaged"
+    Mint="M",
+    NearMint="NM",
+    Excellent="NM",
+    Good="LP",
+    LightPlayed="MP",
+    Played="HP",
+    Poor="D"
     )
 
 
