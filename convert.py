@@ -6,7 +6,18 @@ from os.path import exists
 import csv
 from pathlib import Path
 
-file_path = "dragon_shield.csv"
+
+
+condition_map = defaultdict(
+    lambda: '',
+    Mint="Mint",
+    NearMint="Near Mint",
+    Excellent="Near Mint",
+    Good="Good (Lightly Played)",
+    LightPlayed="Played",
+    Played="Heavily Played",
+    Poor="Damaged"
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,30 +33,6 @@ class Card:
     language: str
 
 
-def condition_setter(condition):
-    if condition == '"Mint"':
-        return '"Mint"'
-    elif condition == '"NearMint"' or condition == '"Excellent"':
-        return '"Near Mint"'
-    elif condition == '"Good"':
-        return '"Good (Lightly Played)"'
-    elif condition == '"LightPlayed"':
-        return '"Played"'
-    elif condition == '"Played"':
-        return '"Heavily Played"'
-    elif condition == '"Poor"':
-        return '"Damaged"'
-    else:
-        return '""'
-
-
-def foil_setter(foilage):
-    if foilage != "Normal":
-        return "foil"
-    else:
-        return ""
-
-
 def split_data(line):
     data = [
         '"{}"'.format(x)
@@ -58,8 +45,8 @@ def split_data(line):
     set_code = data[4].lower()
     set_name = data[5]
     collector_num = data[6]
-    condition = condition_setter(data[7])
-    foil = foil_setter(data[8])
+    condition = condition_map[data[7]]
+    foil = '' if data[8] == 'Normal' else 'foil'
     language = data[9]
 
     card = Card(
