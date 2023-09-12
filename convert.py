@@ -19,6 +19,16 @@ condition_map = defaultdict(
     Poor="D"
     )
 
+moxfield_headers = [
+    "Count",
+    "Name",
+    "Edition",
+    "Condition",
+    "Language",
+    "Foil",
+    "Collector Number"
+    ]
+
 
 @dataclass(frozen=True, slots=True)
 class Card:
@@ -31,6 +41,20 @@ class Card:
     condition: str
     foil: str
     language: str
+
+    def get_output_dict(self) -> dict[str, str]:
+        return {
+            'Count': self.quantity,
+            # Tradelist count is not used in Moxfield
+            # 'Tradelist Count': self.trade_quantity,
+            'Name': self.name,
+            'Edition': self.set_code,
+            'Condition': self.condition,
+            'Language': self.language,
+            'Foil': self.foil,
+            'Collector Number': self.collector_num
+            }
+
 
 
 def split_data(line):
