@@ -1,109 +1,111 @@
-from os.path import exists
+#!/usr/bin/env python3
+
 import csv
-
-file_path = "dragon_shield.csv"
-
-
-class Card_Data:
-    def __init__(
-        self,
-        quantity,
-        trade_quantity,
-        name,
-        set_code,
-        set_name,
-        collector_num,
-        condition,
-        foil,
-        language,
-    ):
-        self.quantity = quantity
-        self.trade_quantity = trade_quantity
-        self.name = name
-        self.set_code = set_code
-        self.set_name = set_name  # set name is not relevant to conversion
-        self.collector_num = collector_num
-        self.condition = condition
-        self.foil = foil
-        self.language = language
+from dataclasses import dataclass
+from os import PathLike
+from os.path import exists
+from collections import defaultdict
+from pathlib import Path
 
 
-def condition_setter(condition):
-    if condition == '"Mint"':
-        return '"Mint"'
-    elif condition == '"NearMint"' or condition == '"Excellent"':
-        return '"Near Mint"'
-    elif condition == '"Good"':
-        return '"Good (Lightly Played)"'
-    elif condition == '"LightPlayed"':
-        return '"Played"'
-    elif condition == '"Played"':
-        return '"Heavily Played"'
-    elif condition == '"Poor"':
-        return '"Damaged"'
-    else:
-        return '""'
-
-
-def foil_setter(foilage):
-    if foilage != "Normal":
-        return "foil"
-    else:
-        return ""
-
-
-def split_data(line):
-    data = [
-        '"{}"'.format(x)
-        for x in list(next(csv.reader([line], delimiter=",", quotechar='"')))
-    ]
-
-    quantity = data[1]
-    trade_quantity = data[2]
-    name = data[3].replace('"', "")
-    set_code = data[4].lower()
-    set_name = data[5]
-    collector_num = data[6]
-    condition = condition_setter(data[7])
-    foil = foil_setter(data[8])
-    language = data[9]
-
-    card = Card_Data(
-        quantity,
-        trade_quantity,
-        name,
-        set_code,
-        set_name,
-        collector_num,
-        condition,
-        foil,
-        language,
+condition_map = defaultdict(
+    lambda: '',
+    Mint="M",
+    NearMint="NM",
+    Excellent="NM",
+    Good="LP",
+    LightPlayed="MP",
+    Played="HP",
+    Poor="D"
     )
 
-    return card
+moxfield_headers = [
+    "Count",
+    "Name",
+    "Edition",
+    "Condition",
+    "Language",
+    "Foil",
+    "Collector Number"
+    ]
 
 
-def convert():
-    if not exists(file_path):
-        print(f'File not found. Place "{file_path}" in root folder.')
-    else:
-        input = open(file_path, "r")
-        contents = input.readlines()
-        input.close()
+@dataclass(frozen=True, slots=True)
+class CardData:
+    quantity: str
+    trade_quantity: str
+    name: str
+    set_code: str
+    set_name: str
+    collector_num: str
+    condition: str
+    foil: str
+    language: str
 
-        with open("moxfield.csv", "w") as output:
-            output.write(
-                'Count,"Tradelist Count","Name","Edition","Condition",'
-                + '"Language","Foil","Tags","Last Modified","Collector Number"\n'
-            )
-            for line in contents[2:]:
-                card = split_data(line)
-                output.write(
-                    f'{card.quantity},{card.trade_quantity},"{card.name}",'
-                    + f"{card.set_code},{card.condition},{card.language},"
-                    + f'{card.foil},"","",{card.collector_num}\n'
+    def get_output_dict(self) -> dict[str, str]:
+        return {
+            moxfield_headers[0]: self.quantity,
+            moxfield_headers[1]: self.name,
+            moxfield_headers[2]: self.set_code,
+            moxfield_headers[3]: self.condition,
+            moxfield_headers[4]: self.language,
+            moxfield_headers[5]: self.foil,
+            moxfield_headers[6]: self.collector_num
+            }
+
+
+def generate_cards(csv_path: PathLike) -> list[CardData]:
+    retval: list[CardData] = []
+
+    with open(csv_path, 'r') as csv_file:
+        # The first line is a seperator definition
+        seperator = csv_file.readline().split('=')[1].strip('"\n')
+        csv_reader = csv.DictReader(csv_file, delimiter=seperator)
+
+        data_row: dict
+        for data_row in csv_reader:
+            # Dragon Shield adds a junk data row at the end
+            if data_row['Quantity'] == '':
+                continue
+
+            printing = data_row['Printing'].lower()
+            if printing not in ('etched', 'foil'):
+                printing = ''
+
+            card = CardData(
+                data_row['Quantity'],
+                data_row['Trade Quantity'],
+                data_row['Card Name'],
+                data_row['Set Code'],
+                data_row['Set Name'],
+                data_row['Card Number'],
+                condition_map[data_row['Condition']],
+                printing,
+                data_row['Language'],
                 )
+
+            retval.append(card)
+
+    return retval
+
+
+def convert(in_path: PathLike, out_path: PathLike) -> None:
+    if not exists(in_path):
+        raise FileNotFoundError(
+            f'{in_path} not found. Place file in root folder.')
+
+    card_data = generate_cards(in_path)
+
+    with open(out_path, 'w', newline='') as out_file:
+        writer = csv.DictWriter(out_file,
+                                fieldnames=moxfield_headers,
+                                dialect=csv.unix_dialect)
+        writer.writeheader()
+        for card in card_data:
+            writer.writerow(card.get_output_dict())
 
 
 if __name__ == "__main__":
-    convert()
+    input_path = Path("cards.csv")
+    output_path = Path("moxfield.csv")
+    convert(input_path, output_path)

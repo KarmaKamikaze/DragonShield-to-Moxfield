@@ -4,7 +4,7 @@ A simple python script that converts a collection from the DragonShield App into
 
 ## Usage
 
-1. Place your exported DragonShield csv file in the project folder and ensure that it is named `dragon_shield.csv`.
+1. Place your exported DragonShield csv file in the project folder and ensure that it is named `cards.csv`.
 
 2. Run the script with `python ./convert.py`.
 
