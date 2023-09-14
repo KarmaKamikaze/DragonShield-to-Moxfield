@@ -48,9 +48,9 @@ class CardData:
             moxfield_headers[1]: self.name,
             moxfield_headers[2]: self.set_code,
             moxfield_headers[3]: self.condition,
-            moxfield_headers[5]: self.language,
-            moxfield_headers[6]: self.foil,
-            moxfield_headers[7]: self.collector_num
+            moxfield_headers[4]: self.language,
+            moxfield_headers[5]: self.foil,
+            moxfield_headers[6]: self.collector_num
             }
 
 
